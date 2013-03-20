@@ -1,0 +1,17 @@
+.DS_Store
+/vendor
+/composer.phar
+/composer.lock
+/.project
+/.vagrant
+/.settings/org.eclipse.php.core.prefs
+/.buildpath
+/mysqlimport.lock
+/xhprof.lock
+/build/logs/junit.xml
+/provision/locks/sudokey.lock
+/provision/locks/vagrantkey.lock
+provision/locks/db.lock
+*.class
+*.pyc
+*.pyo
