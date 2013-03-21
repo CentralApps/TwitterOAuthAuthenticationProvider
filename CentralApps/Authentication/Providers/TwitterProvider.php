@@ -60,8 +60,6 @@ class TwitterProvider implements OAuthProviderInterface
 		} catch (\Exception $e) {
 			return null;
 		}
-		//http_code
-		// $connection = new TwitterOAuth(CONSUMER_KEY, CONSUMER_SECRET, $_SESSION['oauth_token'], $_SESSION['oauth_token_secret']);
 		return null;
 	}
 	
