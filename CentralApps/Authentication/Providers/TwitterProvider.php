@@ -22,10 +22,10 @@ class TwitterProvider implements OAuthProviderInterface
 		$this->userFactory = $user_factory;
 		$this->userGateway = $user_gateway;
 		
-		if(is_array($request) && array_key_exists('get') && is_array($request['get'])) {
+		if(is_array($request) && array_key_exists('get', $request) && is_array($request['get'])) {
 			$this->get = $request['get'];
 		}
-		if(is_array($request) && array_key_exists('session') && is_array($request['session'])) {
+		if(is_array($request) && array_key_exists('session', $request) && is_array($request['session'])) {
 			$this->session = $request['session'];
 		}
 		
@@ -80,6 +80,11 @@ class TwitterProvider implements OAuthProviderInterface
 		}
 		return false;
 	}
+    
+    public function handleAttach()
+    {
+        
+    }
 	
 	public function processLoginAttempt()
 	{
@@ -130,12 +135,12 @@ class TwitterProvider implements OAuthProviderInterface
 		return $this->externalId;
 	}
 	
-	protected function getTwitterAPIConnection()
+	protected function getTwitterAPIConnection($ignore_set_tokens=false)
 	{
-		if(!is_null($this->oAuthToken) && !is_null($this->oAuthTokenSecret)) {
-			$connection = new TwitterOAuth($this->consumerKey, $this->consumerSecret, $this->oAuthToken, $this->oAuthTokenSecret);
+		if(!is_null($this->oAuthToken) && !is_null($this->oAuthTokenSecret) && ! $ignore_set_tokens) {
+			$connection = new \TwitterOAuth($this->consumerKey, $this->consumerSecret, $this->oAuthToken, $this->oAuthTokenSecret);
 		} else {
-			$connection = new TwitterOAuth($this->consumerKey, $this->consumerSecret);
+			$connection = new \TwitterOAuth($this->consumerKey, $this->consumerSecret);
 		}
 		$connection->host = "https://api.twitter.com/1.1/";
 		return $connection;
@@ -143,29 +148,44 @@ class TwitterProvider implements OAuthProviderInterface
 	
 	public function getLoginUrl()
 	{
-		return $this->buildRedirectUrl() . "state=twitter-login";	
+		return $this->buildRedirectUrl('state=twitter-login');	
 	}
 	
 	public function getRegisterUrl()
 	{
-		return $this->buildRedirectUrl() . "state=twitter-register";	
+		return $this->buildRedirectUrl('state=twitter-register');	
 	}
 	
 	public function getAttachUrl()
 	{
-		return $this->buildRedirectUrl() . "state=twitter-attach";	
+		return $this->buildRedirectUrl('state=twitter-attach');	
 	}
 	
-	protected function buildRedirectUrl()
+	protected function buildRedirectUrl($state)
 	{
-		$connection = $this->getTwitterAPIConnection();
-		$callback = $this->callbackPage . parse_url($this->callbackPage, PHP_URL_QUERY) ? "?" : "";
+		$connection = $this->getTwitterAPIConnection($ignore_set_tokens=true);
+		$callback = $this->callbackPage . (is_null(parse_url($this->callbackPage, PHP_URL_QUERY)) ? "?" : "&") . $state;
 		$request_token = $connection->getRequestToken($callback);
 		$this->persistOAuthToken($request_token['oauth_token']);
 		$this->persistOAuthTokenSecret($request_token['oauth_token_secret']);
 		$redirect_url = $connection->getAuthorizeURL($request_token['oauth_token']);
-		$glue = parse_url($this->callbackPage, PHP_URL_QUERY) ? "?" : "&";
+		$glue = (is_null(parse_url($redirect_url, PHP_URL_QUERY)) ? "?" : "&") . $state;
 		return $redirect_url . $glue;
 	}
+    
+    public function setConsumerKey($consumer_key)
+    {
+        $this->consumerKey = $consumer_key;
+    }
+    
+    public function setConsumerSecret($consumer_secret)
+    {
+        $this->consumerSecret = $consumer_secret;
+    }
+    
+    public function setCallbackPage($callback_page)
+    {
+        $this->callbackPage = $callback_page;
+    }
 
 }
