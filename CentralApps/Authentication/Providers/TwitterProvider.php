@@ -93,11 +93,12 @@ class TwitterProvider implements OAuthProviderInterface
 		$token_credentials = $connection->getAccessToken($this->get['oauth_verifier']);
 		$this->oAuthToken = $token_credentials['oauth_token'];
 		$this->oAuthTokenSecret = $token_credentials['oauth_token_secret'];
+        $connection = $this->getTwitterAPIConnection();
 		$content = $connection->get('account/verify_credentials');
 		if($connection->http_code != 200) {
 			return null;
 		}
-		$this->externalId = $content['id'];
+		$this->externalId = $content->id;
 		try {
  			 return $this->userFactory->getFromProvider($this);
 		} catch (\Exception $e) {
@@ -168,7 +169,7 @@ class TwitterProvider implements OAuthProviderInterface
 		$request_token = $connection->getRequestToken($callback);
 		$this->persistOAuthToken($request_token['oauth_token']);
 		$this->persistOAuthTokenSecret($request_token['oauth_token_secret']);
-		$redirect_url = $connection->getAuthorizeURL($request_token['oauth_token']);
+		$redirect_url = $connection->getAuthorizeURL($request_token);
 		$glue = (is_null(parse_url($redirect_url, PHP_URL_QUERY)) ? "?" : "&") . $state;
 		return $redirect_url . $glue;
 	}
