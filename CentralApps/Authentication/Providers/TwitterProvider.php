@@ -158,7 +158,7 @@ class TwitterProvider implements OAuthProviderInterface
     }
 	
 	public function processLoginAttempt()
-	{
+	{	    
 		$connection = $this->getTwitterAPIConnection();
 		$this->clearPersistedTokens();
 		$token_credentials = $connection->getAccessToken($this->get['oauth_verifier']);
