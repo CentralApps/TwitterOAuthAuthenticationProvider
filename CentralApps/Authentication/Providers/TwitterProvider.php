@@ -81,9 +81,70 @@ class TwitterProvider implements OAuthProviderInterface
 		return false;
 	}
     
+    public function verifyTokens()
+    {
+        $connection = $this->getTwitterAPIConnection();
+        $content = $connection->get('account/verify_credentials');
+        if($connection->http_code != 200) {
+            return false;
+        } else {
+            $this->externalId = $content->id;
+            return $content;
+        }
+    }
+    
     public function handleAttach()
     {
+        if(!is_null($this->userGateway->user)) {
+            $connection = $this->getTwitterAPIConnection();
+            $this->clearPersistedTokens();
+            $token_credentials = $connection->getAccessToken($this->get['oauth_verifier']);
+            $this->oAuthToken = $token_credentials['oauth_token'];
+            $this->oAuthTokenSecret = $token_credentials['oauth_token_secret'];
+            $connection = $this->getTwitterAPIConnection();
+            $content = $connection->get('account/verify_credentials');
+            if($connection->http_code != 200) {
+                return false;
+            }
+            $this->externalId = $content->id;
+            try {
+                 $this->userGateway->attachTokensFromProvider($this);
+                 return true;
+            } catch (\Exception $e) {
+                return false;
+            }
+            return false;
+        } else {
+            // exception?
+            return false;
+        }
         
+    }
+    
+    public function handleRegister()
+    {
+        if(!is_null($this->userGateway->user)) {
+            return false; // cant't oauth register when user is logged in!
+        } else {
+            $connection = $this->getTwitterAPIConnection();
+            $this->clearPersistedTokens();
+            $token_credentials = $connection->getAccessToken($this->get['oauth_verifier']);
+            $this->oAuthToken = $token_credentials['oauth_token'];
+            $this->oAuthTokenSecret = $token_credentials['oauth_token_secret'];
+            $connection = $this->getTwitterAPIConnection();
+            $content = $connection->get('account/verify_credentials');
+            if($connection->http_code != 200) {
+                return false;
+            }
+            $this->externalId = $content->id;
+            try {
+                 $this->userGateway->registerUserFromProvider($this);
+                 return true;
+            } catch (\Exception $e) {
+                return false;
+            }
+            return false;
+        }
     }
 	
 	public function processLoginAttempt()
