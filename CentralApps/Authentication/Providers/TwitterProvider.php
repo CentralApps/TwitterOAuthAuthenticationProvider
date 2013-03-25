@@ -15,6 +15,7 @@ class TwitterProvider implements OAuthProviderInterface
 	protected $oAuthToken;
 	protected $oAuthTokenSecret;
 	protected $persistantTokensLookedUp = false;
+    protected $externalUsername = null;
 	
 	public function __construct(array $request, \CentralApps\Authentication\UserFactoryInterface $user_factory, \CentralApps\Authentication\UserGateway $user_gateway)
 	{
@@ -81,6 +82,7 @@ class TwitterProvider implements OAuthProviderInterface
 		return false;
 	}
     
+    // TODO: use this to remove the repetition from below
     public function verifyTokens()
     {
         $connection = $this->getTwitterAPIConnection();
@@ -103,6 +105,11 @@ class TwitterProvider implements OAuthProviderInterface
         $this->oAuthTokenSecret = $secret;
     }
     
+    public function getExternalUsername()
+    {
+        return $this->externalUsername;
+    }
+    
     public function handleAttach()
     {
         if(!is_null($this->userGateway->user)) {
@@ -117,6 +124,7 @@ class TwitterProvider implements OAuthProviderInterface
                 return false;
             }
             $this->externalId = $content->id;
+            $this->externalUsername = $content->screen_name;
             try {
                  $this->userGateway->attachTokensFromProvider($this);
                  return true;
@@ -147,6 +155,7 @@ class TwitterProvider implements OAuthProviderInterface
                 return false;
             }
             $this->externalId = $content->id;
+            $this->externalUsername = $content->screen_name;
             try {
                  $this->userGateway->registerUserFromProvider($this);
                  return true;
@@ -170,6 +179,7 @@ class TwitterProvider implements OAuthProviderInterface
 			return null;
 		}
 		$this->externalId = $content->id;
+        $this->externalUsername = $content->screen_name;
 		try {
  			 return $this->userFactory->getFromProvider($this);
 		} catch (\Exception $e) {
