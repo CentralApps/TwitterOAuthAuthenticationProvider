@@ -93,6 +93,16 @@ class TwitterProvider implements OAuthProviderInterface
         }
     }
     
+    public function setOAuthToken($token)
+    {
+        $this->oAuthToken = $token;
+    }
+    
+    public function setOAuthTokenSecret($secret)
+    {
+        $this->oAuthTokenSecret = $secret;
+    }
+    
     public function handleAttach()
     {
         if(!is_null($this->userGateway->user)) {
