@@ -97,6 +97,8 @@ class TwitterProvider implements OAuthProviderInterface
             return false;
         } else {
             $this->externalId = $content->id;
+            $this->externalUsername = $content->screen_name;
+            $this->externalDisplayName = $content->name;
             return $content;
         }
     }
@@ -161,6 +163,7 @@ class TwitterProvider implements OAuthProviderInterface
             if($connection->http_code != 200) {
                 return false;
             }
+
             $this->externalId = $content->id;
             $this->externalUsername = $content->screen_name;
             $this->externalDisplayName = $content->name;
